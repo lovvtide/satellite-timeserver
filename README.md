@@ -1,6 +1,6 @@
 # satellite-timeserver
 
-Satellite timeserver listens for new blocks and broadcasts the block metadata (hash, height, and timstamp) on nostr.
+Satellite timeserver listens for new blocks and broadcasts the block metadata (`hash`, `height`, and `timestamp`) on nostr.
 
 ### Why?
 
