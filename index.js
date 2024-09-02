@@ -1,14 +1,19 @@
 import 'dotenv/config';
+import { useWebSocketImplementation } from 'nostr-tools/pool';
+import WebSocket from 'ws';
 
 import Clock from './lib/clock.js';
 import NostrInterface from './lib/nostr-interface.js';
 import BlockProvider from './lib/block-provider.js';
 
+global.WebSocket = WebSocket;
+useWebSocketImplementation(WebSocket);
+
 const start = async () => {
 	// Check to prevent accidental syncing all the way from genesis block
 	// If you actually want to do that, you can pass "0" explicitly
-	if (typeof process.env.INTIAL_BLOCK_HEIGHT === 'undefined') {
-		throw Error(`Must specify 'INTIAL_BLOCK_HEIGHT' as env var`);
+	if (typeof process.env.INITIAL_BLOCK_HEIGHT === 'undefined') {
+		throw Error(`Must specify 'INITIAL_BLOCK_HEIGHT' as env var`);
 	}
 
 	const clock = new Clock();
@@ -25,6 +30,8 @@ const start = async () => {
 		nostrInterface.handleBlock(block);
 	});
 
+	await nostrInterface.restorePrevious();
+
 	// TODO
 	// Ask external relays for block metadata events signed by this
 	// timeserver's secret key to avoid synchronizing duplicates
@@ -35,13 +42,13 @@ const start = async () => {
 	// interface to be composed and broadcasted to configured relays
 
 	await clock.advance({
-		startBlock: parseInt(process.env.INTIAL_BLOCK_HEIGHT),
+		startBlock: parseInt(process.env.INITIAL_BLOCK_HEIGHT),
 	});
 
 	setInterval(
 		async () => {
 			await clock.advance({
-				startBlock: parseInt(process.env.INTIAL_BLOCK_HEIGHT),
+				startBlock: parseInt(process.env.INITIAL_BLOCK_HEIGHT),
 			});
 		},
 		process.env.SYNC_INTERVAL_SECONDS ? parseInt(process.env.SYNC_INTERVAL_SECONDS) * 1000 : 60000
