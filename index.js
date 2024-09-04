@@ -5,6 +5,7 @@ import WebSocket from 'ws';
 import Clock from './lib/clock.js';
 import NostrInterface from './lib/nostr-interface.js';
 import BlockProvider from './lib/block-provider.js';
+import MempoolSpaceSource from './lib/mempool-space-source.js';
 
 global.WebSocket = WebSocket;
 useWebSocketImplementation(WebSocket);
@@ -18,6 +19,9 @@ const start = async () => {
 
 	const clock = new Clock();
 	const provider = new BlockProvider();
+
+	provider.addDataSource(new MempoolSpaceSource());
+
 	const nostrInterface = new NostrInterface({
 		relays: process.env.BROADCAST_RELAYS ? process.env.BROADCAST_RELAYS.split(',') : [],
 	});
@@ -31,11 +35,6 @@ const start = async () => {
 	});
 
 	await nostrInterface.restorePrevious();
-
-	// TODO
-	// Ask external relays for block metadata events signed by this
-	// timeserver's secret key to avoid synchronizing duplicates
-	// await nostrInterface.restorePrevious
 
 	// Poll the remote provider (once per minute by default) to check for new blocks.
 	// When a new block is detected, fire the 'block' event, passing it to the nostr
