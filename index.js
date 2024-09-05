@@ -36,19 +36,27 @@ const start = async () => {
 
 	await nostrInterface.restorePrevious();
 
-	// Poll the remote provider (once per minute by default) to check for new blocks.
+	let startBlock;
+
+	// If no initial block height is specified, use the current height of the block provider
+	if (typeof process.env.INITIAL_BLOCK_HEIGHT === 'undefined') {
+		startBlock = await provider.getHeight();
+	} else if (typeof process.env.INITIAL_BLOCK_HEIGHT !== 'undefined') {
+		startBlock = parseInt(process.env.INITIAL_BLOCK_HEIGHT);
+	}
+
+	if (typeof startBlock === 'undefined') {
+		throw Error('Failed to determine starting block height');
+	}
+
+	await clock.advance({ startBlock });
+
+	// Poll the remote provider(s) (once per minute by default) to check for new blocks.
 	// When a new block is detected, fire the 'block' event, passing it to the nostr
 	// interface to be composed and broadcasted to configured relays
-
-	await clock.advance({
-		startBlock: parseInt(process.env.INITIAL_BLOCK_HEIGHT),
-	});
-
 	setInterval(
 		async () => {
-			await clock.advance({
-				startBlock: parseInt(process.env.INITIAL_BLOCK_HEIGHT),
-			});
+			await clock.advance({ startBlock });
 		},
 		process.env.SYNC_INTERVAL_SECONDS ? parseInt(process.env.SYNC_INTERVAL_SECONDS) * 1000 : 60000
 	);

@@ -30,6 +30,6 @@ A less obvious but potentially very powerful use case relates to the governance 
 
 `node index.js`
 
-Don't forget to specify `INITIAL_BLOCK_HEIGHT` in a `.env` file unless you want to sync the whole blockchain.
+You can specify `INITIAL_BLOCK_HEIGHT` in a `.env` file to sync to a specific block height. If you don't set this, the server will sync starting from the current height (according to the block provider).
 
 If you want to sign and broadcast events you'll also need to set a value for `SIGNING_SECRET_KEY` and `BROADCAST_RELAYS` (comma separated urls). If you don't set these, blocks will still sync but you'll just get a warning that events cannot be signed and/or broadcast.
